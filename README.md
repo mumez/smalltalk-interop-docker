@@ -7,17 +7,26 @@ A Docker image for running [PharoSmalltalkInteropServer](https://github.com/mume
 | Variable | Description | Default |
 |---|---|---|
 | `PHARO_SIS_PORT` | Server port | `8086` |
-| `PHARO_SIS_SCREENSHOT_DIR` | Screenshot save directory | `/root/smalltalk-interop/screenshots` |
+| `PHARO_SIS_SCREENSHOT_DIR` | Screenshot output directory | `/root/screenshots` |
 
 ## Volumes
 
 | Path | Description |
 |---|---|
-| `/root/smalltalk-interop/screenshots` | Screenshot output directory (mountable) |
+| `/root/smalltalk-interop` | PharoSmalltalkInterop server directory (mountable) |
+| `/root/screenshots` | Screenshot output directory (mountable) |
 
 ## Usage
 
 ### Build and run (example)
+
+Using Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+Using the run script:
 
 ```bash
 bash run.sh
@@ -37,6 +46,13 @@ docker run --name sis-pharo01 -d \
 
 ### Access
 
-- SIS API: `http://localhost:8086`
+- Smalltalk Interop Server base URL: `http://localhost:8086`
 - Pharo VNC (browser): `http://localhost:6901/?password=vncpassword`
 - Pharo VNC (client): `localhost:5900`
+
+
+### Other settings
+
+For VNC-related settings (VNC port, password, etc.), see [ubuntu-vnc-supervisor](https://github.com/mumez/ubuntu-vnc-supervisor).
+
+For Pharo-related settings (Pharo version, mode, etc.), see [pharo-vnc-supervisor](https://github.com/mumez/pharo-vnc-supervisor).
