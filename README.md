@@ -2,6 +2,8 @@
 
 A Docker image for running [PharoSmalltalkInteropServer](https://github.com/mumez/PharoSmalltalkInteropServer) with VNC and supervisord.
 
+By combining this image with [smalltalk-dev-plugin](https://github.com/mumez/smalltalk-dev-plugin), you can use AI-assisted Pharo development (e.g., via Claude Code) without polluting your local environment. Pharo runs fully isolated inside the container as a sandbox, keeping your host system clean while enabling seamless AI-driven development workflows.
+
 ## Environment Variables
 
 | Variable | Description | Default |
