@@ -7,13 +7,13 @@ ARG REPOS_URL=github://mumez/PharoSmalltalkInteropServer:main/src
 RUN PHARO_MODE=headless setup.sh && \
     PHARO_MODE=headless save-pharo.sh metacello install ${REPOS_URL} BaselineOfPharoSmalltalkInteropServer && \
     cp -r /root/data ${SMALLTALK_INTEROP_DIR} && \
-    mkdir -p ${SMALLTALK_INTEROP_DIR}/screenshots
+    mkdir -p /root/screenshots
 
 ENV PHARO_HOME=${SMALLTALK_INTEROP_DIR}
 ENV PHARO_SIS_PORT=8086
-ENV PHARO_SIS_SCREENSHOT_DIR=${SMALLTALK_INTEROP_DIR}/screenshots
-
-VOLUME ["${SMALLTALK_INTEROP_DIR}/screenshots"]
+ENV PHARO_SIS_SCREENSHOT_DIR=/root/screenshots
 
 ADD ./config/startup.st ${SMALLTALK_INTEROP_DIR}/config/
 ENV PHARO_START_SCRIPT=${SMALLTALK_INTEROP_DIR}/config/startup.st
+
+VOLUME ["${SMALLTALK_INTEROP_DIR}", "${PHARO_SIS_SCREENSHOT_DIR}"]
