@@ -20,6 +20,14 @@ A Docker image for running [PharoSmalltalkInteropServer](https://github.com/mume
 
 ### Build and run (example)
 
+Using Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+Using the run script:
+
 ```bash
 bash run.sh
 ```

@@ -1,0 +1,15 @@
+services:
+  sis-pharo:
+    build: .
+    container_name: sis-pharo01
+    ports:
+      - "5900:5900"
+      - "6901:6901"
+      - "8086:8086"
+    environment:
+      PHARO_SIS_PORT: 8086
+    volumes:
+      - sis-screenshots:/root/screenshots
+
+volumes:
+  sis-screenshots:
