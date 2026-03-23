@@ -15,8 +15,9 @@ By combining this image with [smalltalk-dev-plugin](https://github.com/mumez/sma
 
 | Path | Description |
 |---|---|
-| `/root/smalltalk-interop` | PharoSmalltalkInterop server directory (mountable) |
-| `/root/screenshots` | Screenshot output directory (mountable) |
+| `/root/smalltalk-interop` | PharoSmalltalkInterop server directory |
+| `/root/screenshots` | Screenshot output directory |
+| `/root/repos` | Repositories directory. Mount a local directory containing your Pharo project Git repositories. PharoSmalltalkInteropServer imports from and exports packages to this directory. |
 
 ## Usage
 
@@ -43,6 +44,7 @@ docker run --name sis-pharo01 -d \
     -p 9090:9090 \
     -e PHARO_SIS_PORT=9090 \
     -v /host/path/screenshots:/root/smalltalk-interop/screenshots \
+    -v /host/path/repos:/root/repos \
     sis-pharo
 ```
 

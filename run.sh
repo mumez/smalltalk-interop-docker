@@ -7,4 +7,5 @@ docker run --name sis-pharo01 -d \
     -p 8086:8086 \
     -e PHARO_SIS_PORT=8086 \
     -v sis-screenshots:/root/screenshots \
+    -v "$PWD/repos:/root/repos" \
     sis-pharo
