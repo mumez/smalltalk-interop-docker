@@ -10,6 +10,7 @@ services:
       PHARO_SIS_PORT: 8086
     volumes:
       - sis-screenshots:/root/screenshots
+      - ./repos:/root/repos
 
 volumes:
   sis-screenshots:
