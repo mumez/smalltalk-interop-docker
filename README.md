@@ -17,7 +17,7 @@ By combining this image with [smalltalk-dev-plugin](https://github.com/mumez/sma
 |---|---|
 | `/root/smalltalk-interop` | PharoSmalltalkInterop server directory |
 | `/root/screenshots` | Screenshot output directory |
-| `/root/repos` | Repositories directory |
+| `/root/repos` | Repositories directory. Mount a local directory containing your Pharo project Git repositories. PharoSmalltalkInteropServer imports from and exports packages to this directory. |
 
 ## Usage
 
