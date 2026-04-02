@@ -4,6 +4,36 @@ A Docker image for running [PharoSmalltalkInteropServer](https://github.com/mume
 
 By combining this image with [smalltalk-dev-plugin](https://github.com/mumez/smalltalk-dev-plugin), you can use AI-assisted Pharo development (e.g., via Claude Code) without polluting your local environment. Pharo runs fully isolated inside the container as a sandbox, keeping your host system clean while enabling seamless AI-driven development workflows.
 
+## Quick Start
+
+Create a `compose.yml`:
+
+```yaml
+services:
+  sis-pharo:
+    image: mumez/smalltalk-interop-docker:latest
+    ports:
+      - "5900:5900"
+      - "6901:6901"
+      - "8086:8086"
+    environment:
+      PHARO_SIS_PORT: 8086
+    volumes:
+      - sis-screenshots:/root/screenshots
+      - .:/root/repos  # Mount your project repository here
+
+volumes:
+  sis-screenshots:
+```
+
+Start the container:
+
+```bash
+docker compose up -d
+```
+
+Once running, the Smalltalk Interop Server is available at `http://localhost:8086`, and Pharo is accessible via VNC at `http://localhost:6901/?password=vncpassword`.
+
 ## Environment Variables
 
 | Variable | Description | Default |
