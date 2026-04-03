@@ -9,8 +9,5 @@ services:
     environment:
       PHARO_SIS_PORT: 8086
     volumes:
-      - sis-screenshots:/root/screenshots
+      - ./screenshots:/root/screenshots
       - ./repos:/root/repos
-
-volumes:
-  sis-screenshots:
