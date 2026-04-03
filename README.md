@@ -19,11 +19,9 @@ services:
     environment:
       PHARO_SIS_PORT: 8086
     volumes:
-      - sis-screenshots:/root/screenshots
-      - .:/root/repos  # Mount your project repository here
+      - /tmp:/root/screenshots # Mount pharo screenshots directory
+      - .:/root/repos  # Mount your project repository
 
-volumes:
-  sis-screenshots:
 ```
 
 Start the container:
