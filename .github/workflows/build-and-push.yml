@@ -1,4 +1,4 @@
-name: Build and Push to GHCR
+name: Build and Push to GHCR and Docker Hub
 
 on:
   push:
@@ -11,10 +11,16 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      pharo_version:
+        description: 'Pharo image version to build (e.g. 130). Pushes only the pharoXXX tag. Empty = Dockerfile default'
+        required: false
+        default: ''
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  DOCKERHUB_IMAGE_NAME: docker.io/${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -27,24 +33,79 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Detect Pharo version
+        id: pharo
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.pharo_version }}
+        run: |
+          version="$INPUT_VERSION"
+          if [ -z "$version" ]; then
+            version=$(sed -n 's/^ARG PHARO_IMAGE_VERSION=\([0-9]*\).*/\1/p' Dockerfile)
+          fi
+          if ! [[ "$version" =~ ^[0-9]+$ ]]; then
+            echo "Invalid or missing Pharo version: '$version'" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Determine tag policy
+        id: policy
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          # Manual dispatch: push only pharoXXX (no branch/latest tags)
+          # Push to default branch or v* tag: push pharoXXX (and latest on default branch)
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "dispatch=true" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          elif [ "$REF" = "refs/heads/$DEFAULT_BRANCH" ] || [[ "$REF" == refs/tags/v* ]]; then
+            echo "dispatch=false" >> "$GITHUB_OUTPUT"
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dispatch=false" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      # GHCR: branch / PR / semver / latest / pharoXXX
+      - name: Extract Docker metadata (GHCR)
+        id: meta-ghcr
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
+            type=ref,event=branch,enable=${{ steps.policy.outputs.dispatch != 'true' }}
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ steps.policy.outputs.release == 'true' && github.ref_type == 'branch' }}
+            type=raw,value=pharo${{ steps.pharo.outputs.version }},enable=${{ steps.policy.outputs.release == 'true' || steps.policy.outputs.dispatch == 'true' }}
+
+      # Docker Hub: latest / pharoXXX only
+      - name: Extract Docker metadata (Docker Hub)
+        id: meta-dockerhub
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKERHUB_IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable=${{ steps.policy.outputs.release == 'true' && github.ref_type == 'branch' }}
+            type=raw,value=pharo${{ steps.pharo.outputs.version }},enable=${{ steps.policy.outputs.release == 'true' || steps.policy.outputs.dispatch == 'true' }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -54,7 +115,11 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: |
+            ${{ steps.meta-ghcr.outputs.tags }}
+            ${{ steps.meta-dockerhub.outputs.tags }}
+          labels: ${{ steps.meta-ghcr.outputs.labels }}
+          build-args: |
+            PHARO_IMAGE_VERSION=${{ steps.pharo.outputs.version }}
+          cache-from: type=gha,scope=pharo${{ steps.pharo.outputs.version }}
+          cache-to: type=gha,mode=max,scope=pharo${{ steps.pharo.outputs.version }}

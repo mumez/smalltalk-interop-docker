@@ -1,4 +1,5 @@
-FROM mumez/pharo-vnc-supervisor
+ARG PHARO_IMAGE_VERSION=140
+FROM mumez/pharo-vnc-supervisor:pharo${PHARO_IMAGE_VERSION}
 LABEL maintainer="Masashi Umezawa <ume@softumeya.com>"
 
 ARG SMALLTALK_INTEROP_DIR=/root/smalltalk-interop
